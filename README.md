@@ -1,3 +1,3 @@
 # hospital
 
-hospital staff patient care management system.
+hospital medical staff and patient care management system.
