@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:hospital/views/constants/routes.dart';
 import 'package:hospital/views/register_view.dart';
 import 'package:hospital/views/verify_email.dart';
 import 'dart:developer';
@@ -16,9 +17,9 @@ void main() {
       ),
       home: const Homepage(),
       routes: {
-        '/login/': (context) => const Loginview(),
-        '/register/': (context) => const Registerview(),
-        '/mainview/':(context) => const Mainview(),
+        loginRoute: (context) => const Loginview(),
+        registerRoute: (context) => const Registerview(),
+        mainRoute:(context) => const Mainview(),
       }));
 }
 
@@ -76,7 +77,7 @@ class _MainviewState extends State<Mainview> {
                 final shouldlogout = await showLogOutDialog(context);
                 if(shouldlogout){
                   await FirebaseAuth.instance.signOut();
-                  Navigator.of(context).pushNamedAndRemoveUntil('/login/', (_) => false);
+                  Navigator.of(context).pushNamedAndRemoveUntil(loginRoute, (_) => false);
                 }
                   
                   break;
