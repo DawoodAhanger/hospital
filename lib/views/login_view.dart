@@ -79,6 +79,8 @@ class _LoginviewState extends State<Loginview> {
                                 email: email,
                                 password: password,
                               );
+                              Navigator.of(context).pushNamedAndRemoveUntil(
+                                  '/mainview/', (_) => false);
                             } on FirebaseAuthException catch (e) {
                               if (e.code == 'user-not-found') {
                                 print("user not Found");
@@ -90,7 +92,6 @@ class _LoginviewState extends State<Loginview> {
                           style: ButtonStyle(
                             backgroundColor:
                                 MaterialStateProperty.all(Colors.blue),
-                            
                           ),
                           child: const Text(
                             'Login ',
