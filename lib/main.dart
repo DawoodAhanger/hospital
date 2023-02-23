@@ -19,7 +19,7 @@ void main() {
       routes: {
         loginRoute: (context) => const Loginview(),
         registerRoute: (context) => const Registerview(),
-        mainRoute:(context) => const Mainview(),
+        mainRoute: (context) => const Mainview(),
       }));
 }
 
@@ -68,18 +68,20 @@ class _MainviewState extends State<Mainview> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CareCrate'),backgroundColor: Colors.green,
+        title: const Text('CareCrate'),
+        backgroundColor: Colors.green,
         actions: [
           PopupMenuButton<MenuAction>(
-            onSelected: (value) async{
+            onSelected: (value) async {
               switch (value) {
                 case MenuAction.logout:
-                final shouldlogout = await showLogOutDialog(context);
-                if(shouldlogout){
-                  await FirebaseAuth.instance.signOut();
-                  Navigator.of(context).pushNamedAndRemoveUntil(loginRoute, (_) => false);
-                }
-                  
+                  final shouldlogout = await showLogOutDialog(context);
+                  if (shouldlogout) {
+                    await FirebaseAuth.instance.signOut();
+                    Navigator.of(context)
+                        .pushNamedAndRemoveUntil(loginRoute, (_) => false);
+                  }
+
                   break;
                 default:
               }
@@ -94,7 +96,6 @@ class _MainviewState extends State<Mainview> {
             },
           )
         ],
-        
       ),
     );
   }
@@ -119,4 +120,24 @@ Future<bool> showLogOutDialog(BuildContext context) {
         ],
       );
     },
-  ).then((value) => value??false);}
+  ).then((value) => value ?? false);
+}
+
+Future<bool> showErrorDialog(BuildContext context, String text) {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text("An error occured"),
+        content:  Text(text),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("ok"),
+          ),
+          
+        ],
+      );
+    },
+  ).then((value) => value ?? false);
+}
