@@ -1,10 +1,12 @@
+
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hospital/views/constants/routes.dart';
 import 'package:hospital/views/register_view.dart';
 import 'package:hospital/views/verify_email.dart';
-import 'dart:developer';
+
 import 'firebase_options.dart';
 import 'views/login_view.dart';
 
@@ -20,6 +22,7 @@ void main() {
         loginRoute: (context) => const Loginview(),
         registerRoute: (context) => const Registerview(),
         mainRoute: (context) => const Mainview(),
+        verifyEmailroute:(context)=> const VerifyEmailView(),
       }));
 }
 
@@ -123,21 +126,4 @@ Future<bool> showLogOutDialog(BuildContext context) {
   ).then((value) => value ?? false);
 }
 
-Future<bool> showErrorDialog(BuildContext context, String text) {
-  return showDialog<bool>(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text("An error occured"),
-        content:  Text(text),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text("ok"),
-          ),
-          
-        ],
-      );
-    },
-  ).then((value) => value ?? false);
-}
+

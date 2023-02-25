@@ -2,10 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'package:flutter/material.dart';
-import 'package:hospital/main.dart';
+
 import 'package:hospital/views/constants/routes.dart';
 
 import '../firebase_options.dart';
+import 'constants/showerrordialog.dart';
 
 class Loginview extends StatefulWidget {
   const Loginview({super.key});
@@ -92,6 +93,9 @@ class _LoginviewState extends State<Loginview> {
                               else {
                                 await showErrorDialog(context, "Error:${e.code}");
                               }
+                            }catch(e){
+                              await showErrorDialog
+                              (context, e.toString());
                             }
                           },
                           style: ButtonStyle(
