@@ -1,6 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:flutter/material.dart';
+import 'package:hospital/Services/Auth/auth_service.dart';
 import 'package:hospital/views/constants/routes.dart';
 
 class VerifyEmailView extends StatefulWidget {
@@ -24,32 +23,34 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
             const Text(
               "We have alredy send you an email.Please open it to verify your Email",
               style: TextStyle(
-                  fontSize: 20, 
+                  fontSize: 20,
                   color: Color.fromARGB(255, 170, 225, 172),
                   letterSpacing: 1.5,
-                  height:1.5),
+                  height: 1.5),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
             const Text(
               "If you have not recieved email verification. Press the button below.",
-              style: TextStyle(fontSize: 15,
-              letterSpacing: 1.5,
-              height: 1.5),
+              style: TextStyle(fontSize: 15, letterSpacing: 1.5, height: 1.5),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
             ElevatedButton(
               onPressed: () async {
-                final user = FirebaseAuth.instance.currentUser;
-                await user?.sendEmailVerification();
+                await AuthService.firebase().sendEmailVerification();
               },
               child: const Text("Send me an email Verification"),
             ),
-            ElevatedButton(onPressed:()async{
-              await FirebaseAuth.instance.signOut();
-              Navigator.of(context).pushNamedAndRemoveUntil(registerRoute, (route) => false);
-            }, child: const Text("Restart"))
+            ElevatedButton(
+                onPressed: () async {
+                  await AuthService.firebase().logout();
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    registerRoute,
+                    (route) => false,
+                  );
+                },
+                child: const Text("Restart"))
           ],
         ),
       ),

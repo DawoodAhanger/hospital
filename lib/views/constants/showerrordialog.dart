@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 Future<bool> showErrorDialog(BuildContext context, String text) {
   return showDialog<bool>(
     context: context,
@@ -16,5 +17,4 @@ Future<bool> showErrorDialog(BuildContext context, String text) {
         ],
       );
     },
-  ).then((value) => value ?? false);
-}
+  ).then((value) => value ?? false);}

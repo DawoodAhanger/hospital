@@ -1,12 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-
 import 'package:flutter/material.dart';
+import 'package:hospital/Services/Auth/Auth_exception.dart';
+
 
 import 'package:hospital/views/constants/routes.dart';
 
-import '../firebase_options.dart';
-import 'constants/showerrordialog.dart';
+import '../Services/Auth/auth_service.dart';
+
+import 'package:hospital/views/constants/showerrordialog.dart';
 
 class Loginview extends StatefulWidget {
   const Loginview({super.key});
@@ -44,9 +44,7 @@ class _LoginviewState extends State<Loginview> {
         backgroundColor: Colors.green,
       ),
       body: FutureBuilder(
-        future: Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        ),
+        future: AuthService.firebase().initialize(),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
@@ -76,38 +74,45 @@ class _LoginviewState extends State<Loginview> {
                           onPressed: () async {
                             final email = _email.text;
                             final password = _password.text;
+
                             try {
-                              final userCredential = await FirebaseAuth.instance
-                                  .signInWithEmailAndPassword(
+                              await AuthService.firebase().logIn(
                                 email: email,
                                 password: password,
                               );
-                              final user = FirebaseAuth.instance.currentUser;
-                              if(user?.emailVerified??false){
+                              final user = AuthService.firebase().currentUser;
+                              if (user?.isEmailVerified ?? false) {
                                 Navigator.of(context).pushNamedAndRemoveUntil(
-                                  mainRoute, (_) => false);
+                                  mainRoute,
+                                  (_) => false,
+                                );
+                              } else {
+                                Navigator.of(context).pushNamedAndRemoveUntil(
+                                  verifyEmailroute,
+                                  (_) => false,
+                                );
                               }
-                              else{
-                                    Navigator.of(context).pushNamed(verifyEmailroute);
-                              }
-                              
-                            } on FirebaseAuthException catch (e) {
-                              if (e.code == 'user-not-found') {
-                                await showErrorDialog(context, "user not found");
-                              } else if (e.code == "wrong-password") {
-                                await showErrorDialog(context, "Wrong Password");
-                              }
-                              else {
-                                await showErrorDialog(context, "Error:${e.code}");
-                              }
-                            }catch(e){
-                              await showErrorDialog
-                              (context, e.toString());
+                            } on UserNotFoundAuthException {
+                              print("user not Found");
+                              await showErrorDialog(
+                                context,
+                                'user not found',
+                              );
+                            } on WrongPasswordAuthException {
+                              await showErrorDialog(
+                                context,
+                                'Wrong Password',
+                              );
+                            } on GenericAuthException {
+                              await showErrorDialog(
+                                context,
+                                'Authentication Error',
+                              );
                             }
                           },
                           style: ButtonStyle(
                             backgroundColor:
-                                MaterialStateProperty.all(Colors.blue),
+                                MaterialStateProperty.all(Colors.green),
                           ),
                           child: const Text(
                             'Login ',

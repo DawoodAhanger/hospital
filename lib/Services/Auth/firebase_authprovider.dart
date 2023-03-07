@@ -1,17 +1,29 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:hospital/Services/Auth/Auth_user.dart';
-import 'package:hospital/Services/Auth/Auth_provider.dart';
+
 import 'package:hospital/Services/Auth/Auth_exception.dart';
 import 'package:hospital/Services/Auth/auth_provider.dart';
+import 'package:hospital/firebase_options.dart';
 
 class FirebaseAuthProvider implements AuthProvider {
-  // TODO: implement createUser
   @override
-  Future<AuthUser> createUser(
-      {required String email, required String password}) async {
+  Future<void> initialize() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
+
+  @override
+  Future<AuthUser> createUser({
+    required String email,
+    required String password,
+  }) async {
     try {
-      await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       final user = currentUser;
       if (user != null) {
         return user;
@@ -31,12 +43,9 @@ class FirebaseAuthProvider implements AuthProvider {
     } catch (_) {
       throw GenericAuthException();
     }
-
-    throw UnimplementedError();
   }
 
   @override
-  // TODO: implement currentUser
   AuthUser? get currentUser {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -47,8 +56,10 @@ class FirebaseAuthProvider implements AuthProvider {
   }
 
   @override
-  Future<AuthUser?> logIn(
-      {required String email, required String password}) async {
+  Future<AuthUser?> logIn({
+    required String email,
+    required String password,
+  }) async {
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
@@ -76,15 +87,14 @@ class FirebaseAuthProvider implements AuthProvider {
   }
 
   @override
-  Future<void> logout() async{
+  Future<void> logout() async {
     final user = FirebaseAuth.instance.currentUser;
-    if(user!=null){
+    if (user != null) {
       await FirebaseAuth.instance.signOut();
+    } else {
+      throw UserNotLoggedInAuthException();
     }
-    else{
-      throw  UserNotLoggedInAuthException();
-    }
-    throw UnimplementedError();
+    
   }
 
   @override

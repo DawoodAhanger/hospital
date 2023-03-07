@@ -2,6 +2,7 @@ import 'package:hospital/Services/Auth/Auth_user.dart';
 import 'package:hospital/Services/Auth/auth_exception.dart';
 
 abstract class AuthProvider{
+  Future<void>initialize();
   AuthUser? get currentUser;
   Future<AuthUser?> logIn({
     required String email,
@@ -13,5 +14,6 @@ abstract class AuthProvider{
   });
   Future<void>logout();
   Future<void>sendEmailVerification();
+  
   
 }
