@@ -1,12 +1,14 @@
 
 
 
+
 import 'package:flutter/material.dart';
 import 'package:hospital/Services/Auth/auth_service.dart';
 import 'package:hospital/views/constants/routes.dart';
 import 'package:hospital/views/register_view.dart';
 import 'package:hospital/views/verify_email.dart';
 import 'package:hospital/views/constants/mainview.dart';
+import 'package:hospital/Services/Auth/auth_user.dart';
 
 import 'views/login_view.dart';
 
@@ -28,6 +30,8 @@ void main() {
 
 class Homepage extends StatelessWidget {
   const Homepage({super.key});
+
+  
 
   @override
   Widget build(BuildContext context) {

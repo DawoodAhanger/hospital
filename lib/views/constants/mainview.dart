@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hospital/Services/Auth/auth_service.dart';
+import 'package:hospital/Services/CRUD/message_services.dart';
 import 'package:hospital/views/constants/routes.dart';
 
 import '../../enum/menu_actions.dart';
@@ -12,6 +13,21 @@ class Mainview extends StatefulWidget {
 }
 
 class _MainviewState extends State<Mainview> {
+  late final MessageService _messageService;
+  String get userEmail => AuthService.firebase().currentUser!.email!;
+  @override
+  void initState() {
+    _messageService = MessageService();
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _messageService.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,6 +64,16 @@ class _MainviewState extends State<Mainview> {
           )
         ],
       ),
+      body: FutureBuilder(
+          future: _messageService.getOrCreateUser(email: userEmail),
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.done:
+                return const Text("Your Message will appear Here");
+              default:
+                return const CircularProgressIndicator();
+            }
+          }),
     );
   }
 }

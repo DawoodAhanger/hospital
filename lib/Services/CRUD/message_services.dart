@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:sqflite/sqflite.dart";
@@ -7,35 +9,60 @@ import "package:path/path.dart";
 
 import "crud_execption.dart";
 
-
-
-
-
 class MessageService {
   Database? _db;
+
+  List<DatabaseMessage> _message = [];
+
+  final _messagestreamcontroller =
+      StreamController<List<DatabaseMessage>>.broadcast();
+      Stream<List<DatabaseMessage>>get allMessages =>_messagestreamcontroller.stream;
+
+  Future<DatabaseUser> getOrCreateUser({required String email}) async {
+    try {
+      final user = await getUser(email: email);
+      return user;
+    } on CouldNotFindUser {
+      final createduser = createUser(email: email);
+      return createduser;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> _catchmessage() async {
+    final allmessage = await getAllMessage();
+    _message = allmessage.toList();
+    _messagestreamcontroller.add(_message);
+  }
+
   Future<DatabaseMessage> updateMessage(
       {required DatabaseMessage message, required String text}) async {
-        final db = _getDatabaseOrThrow();
-        await getmessage(id: message.id);
-        final updatescount = await db.update(messagetable, {textColumn:text,isSyncedWithCloudColumn:0});
-        if(updatescount==0){
-          throw CouldNotUpdateMessage();
-          }
-          else{
-            return await getmessage(id: message.id);
-          }
-      }
-  
-  
-  
-  
+    final db = _getDatabaseOrThrow();
+    await getmessage(id: message.id);
+    final updatescount = await db
+        .update(messagetable, {textColumn: text, isSyncedWithCloudColumn: 0});
+    if (updatescount == 0) {
+      throw CouldNotUpdateMessage();
+    } else {
+      final updatedmessage = await getmessage(id: message.id);
+      _message.removeWhere((message) => message.id == updatedmessage.id);
+      _message.add(updatedmessage);
+      _messagestreamcontroller.add(_message);
+      return updatedmessage;
+    }
+  }
+
   Future<Iterable<DatabaseMessage>> getAllMessage() async {
+    await _ensureDbIsOpen();
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     final message = await db.query(messagetable);
     return message.map((messageRow) => DatabaseMessage.fromRow(messageRow));
   }
 
   Future<DatabaseMessage> getmessage({required int id}) async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     final message = await db.query(
       messagetable,
@@ -46,16 +73,25 @@ class MessageService {
     if (message.isEmpty) {
       throw CouldNotFindmessage();
     } else {
-      return DatabaseMessage.fromRow(message.first);
+      final messages = DatabaseMessage.fromRow(message.first);
+      _message.removeWhere((message) => message.id == id);
+      _message.add(messages);
+      _messagestreamcontroller.add(_message);
+      return messages;
     }
   }
 
   Future<int> deleteallmessage() async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
-    return await db.delete(messagetable);
+    final numberofdeletion = await db.delete(messagetable);
+    _message = [];
+    _messagestreamcontroller.add(_message);
+    return numberofdeletion;
   }
 
   Future<void> deletemessage({required String email}) async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     final deletecount = await db.delete(
       messagetable,
@@ -64,10 +100,14 @@ class MessageService {
     );
     if (deletecount == 0) {
       throw CouldNotDeleteMessage();
+    } else {
+      _message.removeWhere((message) => message.id == int.parse(idcolumn));
+      _messagestreamcontroller.add(_message);
     }
   }
 
   Future<DatabaseMessage> createMessage({required DatabaseUser owner}) async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     final dbUser = await getUser(email: owner.email);
     if (dbUser != owner) {
@@ -86,10 +126,13 @@ class MessageService {
       text: text,
       isSyncedWithCloud: true,
     );
+    _message.add(message);
+    _messagestreamcontroller.add(_message);
     return message;
   }
 
   Future<DatabaseUser> getUser({required String email}) async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     final result = await db.query(
       usertable,
@@ -105,6 +148,7 @@ class MessageService {
   }
 
   Future<DatabaseUser> createUser({required String email}) async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     final result = await db.query(
       usertable,
@@ -126,6 +170,7 @@ class MessageService {
   }
 
   Future<void> deleteUser({required String email}) async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     final deletecount = await db.delete(
       usertable,
@@ -156,6 +201,12 @@ class MessageService {
     }
   }
 
+  Future<void> _ensureDbIsOpen() async {
+    try {
+      await open();
+    } on DatabaseAlreadyOpenExecption {}
+  }
+
   Future<void> open() async {
     if (_db != null) {
       throw DatabaseAlreadyOpenExecption();
@@ -167,6 +218,7 @@ class MessageService {
       _db = db;
 
       await db.execute(createUserTable);
+      await _catchmessage();
 
       await db.execute(createmessagetable);
     } on MissingPlatformDirectoryException {
